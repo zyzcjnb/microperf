@@ -10,51 +10,37 @@ topologies, shared-database serialization, cache misuse).
 
 ```
 repo/
-  strong-base/   # the strongest original version of each system (optimization target reference)
-  instances/     # 45 instances across 5 microservice systems, each with injected anti-patterns
-    hotel/               (10 variants,  Go + MongoDB/memcached, wrk2 mixed workload)
-    media/               ( 7 variants,  C++ Thrift + memcached/MongoDB, wrk2 compose-review)
-    martian-bank-demo/   ( 8 variants,  Python/Node.js, locust mixed workload)
-    robot-shop/          (10 variants,  polyglot, locust browser-style load)
-    pitstop/             (10 variants,  .NET + RabbitMQ/SQL Server, custom benchmark harness)
-scripts/
-  benchmark.sh                 # the measurement pipeline (3 iterations per instance)
+  strong-base/             # the strongest original version of each system (optimization target reference)
+  instances/               # 54 instances across 6 microservice systems, each with injected anti-patterns
+    hotel/                 (10 variants,  Go + MongoDB/memcached, wrk2 mixed workload)
+    media/                 ( 7 variants,  C++ Thrift + memcached/MongoDB, wrk2 compose-review)
+    martian-bank-demo/     ( 8 variants,  Python/Node.js, locust mixed workload)
+    robot-shop/            (10 variants,  polyglot, locust browser-style load)
+    pitstop/               (10 variants,  .NET + RabbitMQ/SQL Server, custom benchmark harness)
+    social/                (11 variants,  DeathStarBench social-network, mixed workload)
+    spring-petclinic-micro/( 9 variants,  Java Spring Cloud + HSQLDB/MySQL, JMeter workload)
+
+scripts/                   # per-system workload helpers
+  benchmark.sh
   register_movies_for_compose.py
-run-benchmark.sh               # driver: ./run-benchmark.sh [run_name]
+
+agents/                    # agent integration placeholders
+perf_test.sh               # perf pipeline: 3 runs per target (social-network oriented)
+perf_test-petclinic.sh     # perf pipeline: 10 threads x 3 runs, JMeter (spring-petclinic-micro)
+test_plan.jmx              # JMeter workload plan (spring-petclinic-micro, neutralized host/port vars)
+clean_instance.sh
+run-benchmark.sh           # batch driver: ./run-benchmark.sh [run_name]
+results/                   # perf outputs (gitignored)
 ```
 
 In each system directory, the variant without a suffix is the unmodified
-original; suffixed variants (`-c2`, `-ns`, `-c2hl`, ...) carry injected
-anti-patterns. Code names: c1=chain, c2=chatty, n=nano, nl=nano-lite,
-o=online, h=hub, s=shared-db (and combinations).
-
-## Running the benchmark
-
-Prerequisites: Docker with the compose plugin, python3, curl, ~30 GB free disk.
-
-```bash
-./run-benchmark.sh myrun
-# results written to results/myrun/results.tsv
-```
-
-Per instance, the pipeline builds the stack, waits 30 s for startup, seeds data
-where required, and runs the workload 3 times (60 s each). Latency is the wrk2
-mean (`#[Mean = ...]`); robot-shop/martian report their load generators'
-average response time.
-
-Scoring (per instance, 0-100):
-
-```
-score = clamp( (L_injected - L_optimized) / |L_strong-base - L_injected| * 100, 0, 100 )
-```
-
-where `L_*` are mean latencies under the fixed workloads above.
+original; suffixed variants carry injected anti-patterns. Code names for
+spring-petclinic-micro: `c1`=chain, `c2`=chatty, `c2p`=chatty-pro, `n`=nano,
+`s`=shared-persistence, `l`=long-chain (combined suffixes such as `-ns`,
+`-nsc2p` stack several anti-patterns). Other systems follow their own naming
+documented in their directories.
 
 ## Notes
 
-- The original `media` variant pulls the public `yg397/media-microservices`
-  image; all injected variants build locally.
-- robot-shop requires the public `robotshop/rs-load:2.1.0` image for the
-  load generator; the pipeline tags it automatically for your `.env` TAG.
 - These systems are derived from public open-source microservice benchmarks;
   please refer to the respective upstream projects for their licenses.
