@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS carts;
+USE carts;
+
+CREATE TABLE IF NOT EXISTS carts (
+    id VARCHAR(255) NOT NULL PRIMARY KEY,
+    cart JSON NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Allow the shipping user to access the carts database
+GRANT ALL ON carts.* TO 'shipping'@'%';
+FLUSH PRIVILEGES;

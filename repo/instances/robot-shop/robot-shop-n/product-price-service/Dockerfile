@@ -1,0 +1,13 @@
+FROM python:3.9
+
+EXPOSE 8080
+
+WORKDIR /app
+
+COPY requirements.txt /app/
+
+RUN pip install -r requirements.txt
+
+COPY *.py /app/
+
+CMD ["python", "product_price.py"]

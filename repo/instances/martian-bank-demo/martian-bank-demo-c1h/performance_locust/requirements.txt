@@ -1,0 +1,4 @@
+Faker
+locust
+pymongo
+requests

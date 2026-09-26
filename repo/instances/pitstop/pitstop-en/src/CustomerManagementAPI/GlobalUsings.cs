@@ -1,0 +1,12 @@
+global using Pitstop.Services;
+global using Pitstop.Events;
+global using Pitstop.CustomerManagementAPI.Commands;
+global using Pitstop.CustomerManagementAPI.Events;
+global using Pitstop.CustomerManagementAPI.Model;
+global using Pitstop.CustomerManagementAPI.Mappers;
+global using Pitstop.Infrastructure.Messaging;
+global using Pitstop.Infrastructure.Messaging.Configuration;
+global using Serilog;
+global using Polly;
+global using Microsoft.OpenApi;
+global using Microsoft.AspNetCore.Mvc;

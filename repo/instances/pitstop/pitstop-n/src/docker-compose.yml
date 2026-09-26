@@ -1,0 +1,207 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    volumes:
+      - ./.containerdata/rabbitmq/var/lib/rabbitmq:/var/lib/rabbitmq
+      - ./rabbitmq:/etc/pitstop
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_CONFIG_FILE=/etc/pitstop/rabbitmq.conf
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    volumes:
+      - ./.containerdata/sqlserver/mssql:/var/opt/mssql
+      - ./.containerdata/sqlserver/data:/var/opt/mssql/data
+      - ./.containerdata/sqlserver/log:/var/opt/mssql/log
+      - ./.containerdata/sqlserver/secrets:/var/opt/mssql/secrets
+      - ./.containerdata/sqlserver/backups:/var/opt/mssql/backups 
+    ports:
+      - "1434:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Developer
+      - MSSQL_SA_PASSWORD=8jkGh47hnDw89H@q8LN2
+
+  mailserver:
+    image: maildev/maildev:1.1.0
+    container_name: mailserver
+    ports:
+      - "25:25"
+      - "4000:80"
+
+  logserver:
+    image: datalust/seq:latest
+    container_name: logserver
+    ports:
+      - "5341:80"
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+
+  vehiclemanagementapi:
+    image: pitstop/vehiclemanagementapi:1.0
+    build: VehicleManagementAPI
+    depends_on:
+      - rabbitmq
+      - sqlserver
+      - vehicleinfoservice
+      - vehicleownerservice
+    ports:
+      - "5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  vehicleinfoservice:
+    image: pitstop/vehicleinfoservice:1.0
+    build: VehicleInfoService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5050"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  vehicleownerservice:
+    image: pitstop/vehicleownerservice:1.0
+    build: VehicleOwnerService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5051"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customermanagementapi:
+    image: pitstop/customermanagementapi:1.0
+    build: CustomerManagementAPI
+    depends_on:
+      - rabbitmq
+      - sqlserver
+      - customeridentityservice
+      - customeraddressservice
+      - customertelephoneservice
+      - customeremailservice
+    ports:
+      - "5100"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customeridentityservice:
+    image: pitstop/customeridentityservice:1.0
+    build: CustomerIdentityService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5150"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customeraddressservice:
+    image: pitstop/customeraddressservice:1.0
+    build: CustomerAddressService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5151"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customertelephoneservice:
+    image: pitstop/customertelephoneservice:1.0
+    build: CustomerTelephoneService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5152"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  customeremailservice:
+    image: pitstop/customeremailservice:1.0
+    build: CustomerEmailService
+    depends_on:
+      - sqlserver
+    ports:
+      - "5153"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  workshopmanagementapi:
+    image: pitstop/workshopmanagementapi:1.0
+    build: WorkshopManagementAPI
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    ports:
+      - "5200"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  auditlogservice:
+    image: pitstop/auditlogservice:1.0
+    build: AuditlogService
+    container_name: auditlogservice
+    depends_on:
+      - rabbitmq
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+
+  invoiceservice:
+    image: pitstop/invoiceservice:1.0
+    build: InvoiceService
+    container_name: invoiceservice
+    depends_on:
+      - rabbitmq
+      - sqlserver
+      - mailserver
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+
+  notificationservice:
+    image: pitstop/notificationservice:1.0
+    build: NotificationService
+    container_name: notificationservice
+    depends_on:
+      - rabbitmq
+      - sqlserver
+      - mailserver
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+
+  timeservice:
+    image: pitstop/timeservice:1.0
+    build: TimeService
+    container_name: timeservice
+    depends_on:
+      - rabbitmq
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+
+  workshopmanagementeventhandler:
+    image: pitstop/workshopmanagementeventhandler:1.0
+    build: WorkshopManagementEventHandler
+    container_name: workshopmanagementeventhandler
+    depends_on:
+      - rabbitmq
+      - sqlserver
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+
+  webapp:
+    image: pitstop/webapp:1.0
+    build: WebApp
+    container_name: webapp
+    depends_on:
+      - customermanagementapi
+      - vehiclemanagementapi
+      - workshopmanagementapi
+    ports:
+      - "7005:7005"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production

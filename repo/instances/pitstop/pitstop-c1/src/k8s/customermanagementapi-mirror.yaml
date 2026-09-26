@@ -1,0 +1,44 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: customermanagementapi
+  namespace: pitstop
+spec:
+  host: customermanagementapi
+  subsets:
+    - name: v1
+      labels:
+        version: "1.0"
+    - name: v2
+      labels:
+        version: "2.0"
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customermanagementapi-virtual-service
+  namespace: pitstop
+spec:
+  hosts:
+    - customermanagementapi
+  http:
+  - match:
+    - method:
+        exact: GET
+    route:
+    - destination:
+        host: customermanagementapi
+        subset: v1
+      weight: 100
+    mirror:
+      host: customermanagementapi
+      subset: v2
+    mirrorPercentage:
+      value: 100
+  - route:
+    - destination:
+        host: customermanagementapi
+        subset: v1
+      weight: 100

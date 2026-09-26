@@ -1,0 +1,155 @@
+{
+  "total_requests": 3311,
+  "successful_requests": 3311,
+  "failed_requests": 0,
+  "duration_seconds": 60.21921920776367,
+  "rps": 54.98,
+  "overall": {
+    "min": 4.78,
+    "max": 848.73,
+    "mean": 181.5,
+    "p50": 180.85,
+    "p95": 381.29,
+    "p99": 552.57
+  },
+  "endpoints": {
+    "/CustomerManagement": {
+      "count": 328,
+      "success": 328,
+      "errors": 0,
+      "rps": 5.45,
+      "latency_ms": {
+        "min": 6.55,
+        "max": 848.73,
+        "mean": 255.42,
+        "p50": 240.82,
+        "p95": 575.86,
+        "p99": 638.43
+      }
+    },
+    "/VehicleManagement": {
+      "count": 173,
+      "success": 173,
+      "errors": 0,
+      "rps": 2.87,
+      "latency_ms": {
+        "min": 7.37,
+        "max": 792.99,
+        "mean": 262.49,
+        "p50": 249.75,
+        "p95": 560.05,
+        "p99": 680.46
+      }
+    },
+    "/WorkshopManagement": {
+      "count": 165,
+      "success": 165,
+      "errors": 0,
+      "rps": 2.74,
+      "latency_ms": {
+        "min": 5.29,
+        "max": 379.54,
+        "mean": 30.54,
+        "p50": 8.25,
+        "p95": 140.85,
+        "p99": 278.49
+      }
+    },
+    "/api/refdata/customers": {
+      "count": 668,
+      "success": 668,
+      "errors": 0,
+      "rps": 11.09,
+      "latency_ms": {
+        "min": 12.47,
+        "max": 514.45,
+        "mean": 126.89,
+        "p50": 88.69,
+        "p95": 311.14,
+        "p99": 443.31
+      }
+    },
+    "/api/refdata/vehicles": {
+      "count": 733,
+      "success": 733,
+      "errors": 0,
+      "rps": 12.17,
+      "latency_ms": {
+        "min": 4.78,
+        "max": 612.79,
+        "mean": 136.29,
+        "p50": 96.05,
+        "p95": 287.82,
+        "p99": 452.57
+      }
+    },
+    "POST /api/customers": {
+      "count": 553,
+      "success": 553,
+      "errors": 0,
+      "rps": 9.18,
+      "latency_ms": {
+        "min": 86.64,
+        "max": 511.84,
+        "mean": 221.32,
+        "p50": 213.91,
+        "p95": 322.08,
+        "p99": 460.31
+      }
+    },
+    "POST /api/vehicles": {
+      "count": 625,
+      "success": 625,
+      "errors": 0,
+      "rps": 10.38,
+      "latency_ms": {
+        "min": 87.95,
+        "max": 569.1,
+        "mean": 228.84,
+        "p50": 218.66,
+        "p95": 355.07,
+        "p99": 476.29
+      }
+    },
+    "POST /api/workshopplanning/{date}/jobs": {
+      "count": 33,
+      "success": 33,
+      "errors": 0,
+      "rps": 0.55,
+      "latency_ms": {
+        "min": 108.79,
+        "max": 386.63,
+        "mean": 232.38,
+        "p50": 225.19,
+        "p95": 370.05,
+        "p99": 383.11
+      }
+    },
+    "PUT /api/workshopplanning/{date}/jobs/{jobId}/finish": {
+      "count": 33,
+      "success": 33,
+      "errors": 0,
+      "rps": 0.55,
+      "latency_ms": {
+        "min": 133.39,
+        "max": 623.82,
+        "mean": 272.04,
+        "p50": 232.91,
+        "p95": 527.47,
+        "p99": 594.05
+      }
+    }
+  },
+  "config": {
+    "base_url": "http://localhost:7005",
+    "api_url": "http://localhost:5200",
+    "customer_api_url": "http://localhost:5100",
+    "vehicle_api_url": "http://localhost:5001",
+    "duration_seconds": 60,
+    "concurrency": 10,
+    "warmup_seconds": 15,
+    "scenario": "mixed",
+    "seed_count": 500,
+    "verify": true
+  }
+}

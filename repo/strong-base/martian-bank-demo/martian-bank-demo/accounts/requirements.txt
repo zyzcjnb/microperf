@@ -1,0 +1,9 @@
+Flask
+Flask-Cors
+grpcio
+grpcio-tools
+pymongo
+pytest
+requests
+dotmap
+python-dotenv

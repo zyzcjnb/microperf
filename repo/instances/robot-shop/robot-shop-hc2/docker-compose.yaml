@@ -1,0 +1,190 @@
+version: '3'
+services:
+  mongodb:
+    build:
+      context: mongo
+    image: ${REPO}/rs-mongodb:${TAG}
+    networks:
+      - robot-shop
+    logging: &logging
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "2"
+  redis:
+    image: redis:6.2-alpine
+    networks:
+      - robot-shop
+    logging:
+      <<: *logging
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    networks:
+      - robot-shop
+    logging:
+      <<: *logging
+  catalogue:
+    build:
+      context: catalogue
+    image: ${REPO}/rs-catalogue:${TAG}
+    depends_on:
+      - mongodb
+    networks:
+      - robot-shop
+    healthcheck:
+      test: [ "CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      <<: *logging
+  user:
+    build:
+      context: user
+    image: ${REPO}/rs-user:${TAG}
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - robot-shop
+    healthcheck:
+      test: [ "CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      <<: *logging
+  cart:
+    build:
+      context: cart
+    image: ${REPO}/rs-cart:${TAG}
+    environment:
+      SPLIT_PRODUCT_API: "1"
+    depends_on:
+      - redis
+    networks:
+      - robot-shop
+    healthcheck:
+      test: [ "CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      <<: *logging
+  mysql:
+    build:
+      context: mysql
+    image: ${REPO}/rs-mysql-db:${TAG}
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - robot-shop
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    logging:
+      <<: *logging
+  shipping:
+    build:
+      context: shipping
+    image: ${REPO}/rs-shipping:${TAG}
+    environment:
+      CITY_LIST_LIMIT: 100
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - robot-shop
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      <<: *logging
+  ratings:
+    build:
+      context: ratings
+    image: ${REPO}/rs-ratings:${TAG}
+    environment:
+      APP_ENV: prod
+    networks:
+      - robot-shop
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost/_health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    logging:
+      <<: *logging
+  payment:
+    build:
+      context: payment
+    image: ${REPO}/rs-payment:${TAG}
+    environment:
+      PAYMENT_GATEWAY_ENABLED: "0"
+      PAYMENT_CONNECT_TIMEOUT_SEC: "1.0"
+      PAYMENT_READ_TIMEOUT_SEC: "2.0"
+    depends_on:
+      - rabbitmq
+    networks:
+      - robot-shop
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    # Uncomment to change payment gateway
+    #environment:
+      #PAYMENT_GATEWAY: "https://www.worldpay.com"
+    logging:
+      <<: *logging
+  dispatch:
+    build:
+      context: dispatch
+    image: ${REPO}/rs-dispatch:${TAG}
+    depends_on:
+      - rabbitmq
+    networks:
+      - robot-shop
+    logging:
+      <<: *logging
+  web:
+    build:
+      context: web
+      args:
+        # agent key to download tracing libs
+        KEY: ${monitoring_AGENT_KEY}
+    image: ${REPO}/rs-web:${TAG}
+    depends_on:
+      - catalogue
+      - user
+      - shipping
+      - payment
+    ports:
+      - "18080:8080"
+    networks:
+      - robot-shop
+    healthcheck:
+      test: [ "CMD", "curl", "-H", "X-monitoring-SYNTHETIC: 1", "-f", "http://localhost:8080/" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    # Uncomment to enable monitoring EUM
+    # environment:
+      # monitoring_EUM_KEY: <your eum key>
+      # monitoring_EUM_REPORTING_URL: <your reporting url>
+    logging:
+      <<: *logging
+
+networks:
+  robot-shop:
+

@@ -1,0 +1,15 @@
+com/shop/robotshop/shipping/Controller$CacheEntry.class
+com/shop/robotshop/shipping/CityRepository.class
+com/shop/robotshop/shipping/Code.class
+com/shop/robotshop/shipping/JpaConfig.class
+com/shop/robotshop/shipping/Calculator.class
+com/shop/robotshop/shipping/ShippingServiceApplication.class
+com/shop/robotshop/shipping/Ship.class
+com/shop/robotshop/shipping/CartHelper.class
+com/shop/robotshop/shipping/ShippingServiceApplication$DataSourcePostProcessor.class
+com/shop/robotshop/shipping/City.class
+com/shop/robotshop/shipping/ShippingServiceApplication$monitoringDatacenterTagInterceptor.class
+com/shop/robotshop/shipping/Controller.class
+com/shop/robotshop/shipping/RetryableDataSource.class
+com/shop/robotshop/shipping/CodeRepository.class
+com/shop/robotshop/shipping/ShippingServiceApplication$1.class
