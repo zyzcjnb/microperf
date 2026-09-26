@@ -1,0 +1,14 @@
+server:
+  port: 8085
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka/
+
+spring:
+  sql:
+    init:
+      schema-locations: classpath*:db/hsqldb/schema.sql
+      data-locations: classpath*:db/hsqldb/data.sql
+      mode: embedded

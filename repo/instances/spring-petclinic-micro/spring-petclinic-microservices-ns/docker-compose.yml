@@ -1,0 +1,260 @@
+services:
+  hsqldb-server:
+    build: ../docker/hsqldb-s
+    image: petclinic-s-hsqldb
+    container_name: hsqldb-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test:
+        - CMD
+        - java
+        - -cp
+        - /opt/hsqldb/hsqldb.jar:/opt/hsqldb/sqltool.jar
+        - org.hsqldb.cmdline.SqlTool
+        - --autoCommit
+        - --inlineRc
+        - url=jdbc:hsqldb:hsql://localhost:9001/petclinic,user=SA,password=
+        - --sql
+        - SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS;
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    ports:
+      - 9001:9001
+
+  config-server:
+    image: petclinic-original/spring-petclinic-config-server
+    container_name: config-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-I", "http://config-server:8888"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+     - 8888:8888
+
+  discovery-server:
+    image: petclinic-original/spring-petclinic-discovery-server
+    container_name: discovery-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://discovery-server:8761"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      config-server:
+        condition: service_healthy
+    ports:
+     - 8761:8761
+
+  owners-service:
+    image: petclinic-ns/spring-petclinic-owners-service
+    container_name: owners-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:hsqldb:hsql://hsqldb-server:9001/petclinic
+      - SPRING_DATASOURCE_USERNAME=SA
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_SQL_INIT_MODE=never
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      hsqldb-server:
+        condition: service_healthy
+    ports:
+    - 8081:8081
+
+  pets-service:
+    image: petclinic-ns/spring-petclinic-pets-service
+    container_name: pets-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:hsqldb:hsql://hsqldb-server:9001/petclinic
+      - SPRING_DATASOURCE_USERNAME=SA
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_SQL_INIT_MODE=never
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      hsqldb-server:
+        condition: service_healthy
+    ports:
+    - 8085:8085
+
+  pettypes-service:
+    image: petclinic-ns/spring-petclinic-pettypes-service
+    container_name: pettypes-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:hsqldb:hsql://hsqldb-server:9001/petclinic
+      - SPRING_DATASOURCE_USERNAME=SA
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_SQL_INIT_MODE=never
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      hsqldb-server:
+        condition: service_healthy
+    ports:
+    - 8086:8086
+
+  visits-service:
+    image: petclinic-original/spring-petclinic-visits-service
+    container_name: visits-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:hsqldb:hsql://hsqldb-server:9001/petclinic
+      - SPRING_DATASOURCE_USERNAME=SA
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_SQL_INIT_MODE=never
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      hsqldb-server:
+        condition: service_healthy
+    ports:
+    - 8082:8082
+
+  vets-service:
+    image: petclinic-original/spring-petclinic-vets-service
+    container_name: vets-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:hsqldb:hsql://hsqldb-server:9001/petclinic
+      - SPRING_DATASOURCE_USERNAME=SA
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_SQL_INIT_MODE=never
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      hsqldb-server:
+        condition: service_healthy
+    ports:
+    - 8083:8083
+
+  genai-service:
+    image: petclinic-original/spring-petclinic-genai-service
+    container_name: genai-service
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_KEY=${AZURE_OPENAI_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+     - 8084:8084
+
+  api-gateway:
+    image: petclinic-ns/spring-petclinic-api-gateway
+    container_name: api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+     - 8080:8080
+
+  tracing-server:
+    image: openzipkin/zipkin
+    container_name: tracing-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    ports:
+     - 9411:9411
+
+  admin-server:
+    image: petclinic-original/spring-petclinic-admin-server
+    container_name: admin-server
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    ports:
+     - 9090:9090
+
+  grafana-server:
+    build: ./docker/grafana
+    container_name: grafana-server
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+    - 3030:3000
+
+  prometheus-server:
+    build: ./docker/prometheus
+    container_name: prometheus-server
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    ports:
+    - 9091:9090
