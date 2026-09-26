@@ -11,14 +11,14 @@ topologies, shared-database serialization, cache misuse).
 ```
 repo/
   strong-base/             # the strongest original version of each system (optimization target reference)
-  instances/               # 54 instances across 6 microservice systems, each with injected anti-patterns
-    hotel/                 (10 variants,  Go + MongoDB/memcached, wrk2 mixed workload)
-    media/                 ( 7 variants,  C++ Thrift + memcached/MongoDB, wrk2 compose-review)
-    martian-bank-demo/     ( 8 variants,  Python/Node.js, locust mixed workload)
-    robot-shop/            (10 variants,  polyglot, locust browser-style load)
-    pitstop/               (10 variants,  .NET + RabbitMQ/SQL Server, custom benchmark harness)
-    social/                (11 variants,  DeathStarBench social-network, mixed workload)
-    spring-petclinic-micro/( 9 variants,  Java Spring Cloud + HSQLDB/MySQL, JMeter workload)
+  instances/               # 65 injected instances across 7 microservice systems (+5 unmodified originals as reference)
+    hotel/                 (10 injected + 1 original,  Go + MongoDB/memcached, wrk2 mixed workload)
+    media/                 ( 7 injected + 1 original,  C++ Thrift + memcached/MongoDB, wrk2 compose-review)
+    martian-bank-demo/     ( 8 injected + 1 original,  Python/Node.js, locust mixed workload)
+    robot-shop/            (10 injected + 1 original,  polyglot, locust browser-style load)
+    pitstop/               (10 injected + 1 original,  .NET + RabbitMQ/SQL Server, custom benchmark harness)
+    social/                (11 injected,               DeathStarBench social-network, mixed workload)
+    spring-petclinic-micro/( 9 injected,               Java Spring Cloud + HSQLDB/MySQL, JMeter workload)
 
 scripts/                   # per-system workload helpers
   benchmark.sh
@@ -33,8 +33,9 @@ run-benchmark.sh           # batch driver: ./run-benchmark.sh [run_name]
 results/                   # perf outputs (gitignored)
 ```
 
-In each system directory, the variant without a suffix is the unmodified
-original; suffixed variants carry injected anti-patterns. Code names for
+In hotel/media/martian-bank-demo/pitstop/robot-shop, the variant without a
+suffix is the unmodified original (reference only, not counted above); all
+other variants carry injected anti-patterns. Code names for
 spring-petclinic-micro: `c1`=chain, `c2`=chatty, `c2p`=chatty-pro, `n`=nano,
 `s`=shared-persistence, `l`=long-chain (combined suffixes such as `-ns`,
 `-nsc2p` stack several anti-patterns). Other systems follow their own naming
